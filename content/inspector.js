@@ -59,7 +59,7 @@
 
   function sendPageSnapshot() {
     const target = state.hoveredElement || document.body || document.documentElement;
-    const output = DOMScout.formatter.formatPageSnapshot(target);
+    const output = DOMScout.serializer.finalizeOutput(DOMScout.formatter.formatPageSnapshot(target), target, state.settings).value;
 
     void chrome.runtime.sendMessage({
       type: DOMScout.MSG.PAGE_SNAPSHOT,
@@ -202,6 +202,11 @@
         return;
       case DOMScout.MSG.SET_FORMAT:
         state.settings.format = message.format;
+        syncSelections();
+        sendResponse({ ok: true });
+        return;
+      case DOMScout.MSG.SET_SETTINGS:
+        state.settings = { ...state.settings, ...(message.settings || {}) };
         syncSelections();
         sendResponse({ ok: true });
         return;

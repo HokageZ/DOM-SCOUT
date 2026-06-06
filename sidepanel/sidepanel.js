@@ -11,10 +11,18 @@
     toggleInspectorButton: document.getElementById('toggleInspectorButton'),
     formatSelect: document.getElementById('formatSelect'),
     depthSelect: document.getElementById('depthSelect'),
+    includeContextCheckbox: document.getElementById('includeContextCheckbox'),
+    includeCSSCheckbox: document.getElementById('includeCSSCheckbox'),
+    stripNoiseCheckbox: document.getElementById('stripNoiseCheckbox'),
+    keepTestIdsCheckbox: document.getElementById('keepTestIdsCheckbox'),
+    promptWrapperCheckbox: document.getElementById('promptWrapperCheckbox'),
+    truncationInput: document.getElementById('truncationInput'),
+    tokenWarningInput: document.getElementById('tokenWarningInput'),
     clearSelectionButton: document.getElementById('clearSelectionButton'),
     selectionList: document.getElementById('selectionList'),
     outputPreview: document.getElementById('outputPreview'),
     copyButton: document.getElementById('copyButton'),
+    copyPromptButton: document.getElementById('copyPromptButton'),
     snapshotButton: document.getElementById('snapshotButton'),
     metaSummary: document.getElementById('metaSummary'),
   };
@@ -35,6 +43,48 @@
     elements.toggleInspectorButton.textContent = state.inspectorEnabled ? 'Disable Inspector' : 'Enable Inspector';
     elements.formatSelect.value = state.settings.format;
     elements.depthSelect.value = String(state.settings.depth);
+    elements.includeContextCheckbox.checked = Boolean(state.settings.includeContext);
+    elements.includeCSSCheckbox.checked = Boolean(state.settings.includeCSS);
+    elements.stripNoiseCheckbox.checked = Boolean(state.settings.stripNoise);
+    elements.keepTestIdsCheckbox.checked = Boolean(state.settings.keepTestIds);
+    elements.promptWrapperCheckbox.checked = Boolean(state.settings.promptWrapper);
+    elements.truncationInput.value = String(state.settings.truncationThreshold);
+    elements.tokenWarningInput.value = String(state.settings.maxTokenWarning);
+  }
+
+  function getEffectiveOutput() {
+    return elements.outputPreview.value || state.output || '';
+  }
+
+  function buildPromptWrappedOutput(baseOutput) {
+    const output = baseOutput ?? getEffectiveOutput();
+    const format = state.settings.format;
+    return [
+      'Use the following browser DOM capture to help with implementation or analysis.',
+      `Format: ${format}`,
+      'Focus on semantic structure, selectors, and relevant styling only.',
+      '',
+      output,
+    ].join('\n');
+  }
+
+  async function pushSettings(partial) {
+    state.settings = {
+      ...state.settings,
+      ...partial,
+    };
+
+    rerender();
+
+    if (state.activeTabId == null) {
+      return;
+    }
+
+    await sendMessage({
+      type: DOMScout.MSG.SET_SETTINGS,
+      tabId: state.activeTabId,
+      settings: state.settings,
+    });
   }
 
   function renderSelections() {
@@ -62,7 +112,8 @@
   function renderOutput() {
     const tokenEstimate = Math.ceil((state.output || '').length / 4);
     elements.outputPreview.value = state.output || '';
-    elements.metaSummary.textContent = `${state.selections.length} items · ~${tokenEstimate} tokens`;
+    elements.metaSummary.textContent = `${state.selections.length} items · ~${tokenEstimate} tokens${tokenEstimate > state.settings.maxTokenWarning ? ' · warning' : ''}`;
+    elements.metaSummary.className = tokenEstimate > state.settings.maxTokenWarning ? 'meta warning-text' : 'meta';
   }
 
   function rerender() {
@@ -80,14 +131,27 @@
   }
 
   async function copyOutput() {
-    if (!elements.outputPreview.value.trim()) {
+    if (!getEffectiveOutput().trim()) {
       return;
     }
 
-    await navigator.clipboard.writeText(elements.outputPreview.value);
+    await navigator.clipboard.writeText(getEffectiveOutput());
     elements.copyButton.textContent = 'Copied';
     setTimeout(() => {
       elements.copyButton.textContent = 'Copy';
+    }, 1200);
+  }
+
+  async function copyPromptOutput() {
+    const value = buildPromptWrappedOutput(getEffectiveOutput());
+    if (!value.trim()) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(value);
+    elements.copyPromptButton.textContent = 'Copied';
+    setTimeout(() => {
+      elements.copyPromptButton.textContent = 'Copy Prompt';
     }, 1200);
   }
 
@@ -112,16 +176,39 @@
       return;
     }
 
-    if (state.activeTabId != null) {
-      await sendMessage({ type: DOMScout.MSG.SET_FORMAT, tabId: state.activeTabId, format: state.settings.format });
-    }
+    await pushSettings({ format: state.settings.format });
   });
 
   elements.depthSelect.addEventListener('change', async (event) => {
-    state.settings.depth = getDepthValue(event.target.value);
-    if (state.activeTabId != null) {
-      await sendMessage({ type: DOMScout.MSG.SET_DEPTH, tabId: state.activeTabId, depth: state.settings.depth });
-    }
+    await pushSettings({ depth: getDepthValue(event.target.value) });
+  });
+
+  elements.includeContextCheckbox.addEventListener('change', async (event) => {
+    await pushSettings({ includeContext: event.target.checked });
+  });
+
+  elements.includeCSSCheckbox.addEventListener('change', async (event) => {
+    await pushSettings({ includeCSS: event.target.checked });
+  });
+
+  elements.stripNoiseCheckbox.addEventListener('change', async (event) => {
+    await pushSettings({ stripNoise: event.target.checked });
+  });
+
+  elements.keepTestIdsCheckbox.addEventListener('change', async (event) => {
+    await pushSettings({ keepTestIds: event.target.checked });
+  });
+
+  elements.promptWrapperCheckbox.addEventListener('change', async (event) => {
+    await pushSettings({ promptWrapper: event.target.checked });
+  });
+
+  elements.truncationInput.addEventListener('change', async (event) => {
+    await pushSettings({ truncationThreshold: Math.max(40, Number(event.target.value) || DOMScout.DEFAULTS.truncationThreshold) });
+  });
+
+  elements.tokenWarningInput.addEventListener('change', async (event) => {
+    await pushSettings({ maxTokenWarning: Math.max(500, Number(event.target.value) || DOMScout.DEFAULTS.maxTokenWarning) });
   });
 
   elements.clearSelectionButton.addEventListener('click', async () => {
@@ -133,6 +220,10 @@
 
   elements.copyButton.addEventListener('click', () => {
     void copyOutput();
+  });
+
+  elements.copyPromptButton.addEventListener('click', () => {
+    void copyPromptOutput();
   });
 
   elements.snapshotButton.addEventListener('click', async () => {
@@ -164,7 +255,11 @@
       state.inspectorEnabled = Boolean(message.inspectorEnabled);
       state.settings = { ...state.settings, ...(message.settings || {}) };
       state.selections = Array.isArray(message.selections) ? message.selections : state.selections;
-      state.output = state.selections.map((item) => item.formats?.[state.settings.format] || '').filter(Boolean).join('\n\n');
+      const rawOutput = state.selections.map((item) => item.formats?.[state.settings.format] || '').filter(Boolean).join('\n\n');
+      state.output = rawOutput;
+      if (state.settings.promptWrapper) {
+        state.output = buildPromptWrappedOutput(rawOutput);
+      }
       rerender();
       return;
     }
@@ -173,7 +268,11 @@
       state.activeTabId = message.tabId ?? state.activeTabId;
       state.inspectorEnabled = Boolean(message.inspectorEnabled);
       state.settings = { ...state.settings, ...(message.settings || {}) };
-      state.output = message.output || '';
+      const rawOutput = message.output || '';
+      state.output = rawOutput;
+      if (state.settings.promptWrapper) {
+        state.output = buildPromptWrappedOutput(rawOutput);
+      }
       rerender();
     }
   });

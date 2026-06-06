@@ -20,6 +20,7 @@ DOMScout.MSG = {
   CLEAR_SELECTION:       'ds:clear-selection',
   SET_DEPTH:             'ds:set-depth',
   SET_FORMAT:            'ds:set-format',
+  SET_SETTINGS:          'ds:set-settings',
   HIGHLIGHT_ELEMENT:     'ds:highlight-element',
   REMOVE_ELEMENT:        'ds:remove-element',
   REQUEST_SNAPSHOT:      'ds:request-snapshot',
@@ -46,6 +47,10 @@ DOMScout.DEPTH = {
   ELEMENT_ONLY: 0,
   ONE_LEVEL:    1,
   FULL_SUBTREE: Infinity,
+};
+
+DOMScout.STORAGE_KEYS = {
+  SETTINGS: 'dom-scout:settings',
 };
 
 // Attributes to strip during cleaning
@@ -125,11 +130,14 @@ DOMScout.DEFAULTS = {
   format: DOMScout.FORMATS.CLEAN_HTML,
   depth: DOMScout.DEPTH.FULL_SUBTREE,
   includeContext: true,
-  includeCSS: false,
+  includeCSS: true,
   stripNoise: true,
   keepTestIds: true,
-  truncationThreshold: 2000,  // lines
+  truncationThreshold: 240,
   maxTokenWarning: 8000,
+  includeHidden: false,
+  selectorMode: 'balanced',
+  promptWrapper: false,
 };
 
 DOMScoutGlobal.DOMScout = DOMScout;

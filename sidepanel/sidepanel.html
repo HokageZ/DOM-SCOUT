@@ -40,6 +40,30 @@
 
     <section class="panel-section">
       <div class="section-header">
+        <h2>Options</h2>
+        <div class="meta">Persisted</div>
+      </div>
+      <div class="options-grid">
+        <label class="checkbox-row"><input id="includeContextCheckbox" type="checkbox"> <span>Include parent context</span></label>
+        <label class="checkbox-row"><input id="includeCSSCheckbox" type="checkbox"> <span>Include CSS in rich formats</span></label>
+        <label class="checkbox-row"><input id="stripNoiseCheckbox" type="checkbox"> <span>Strip framework/tracking noise</span></label>
+        <label class="checkbox-row"><input id="keepTestIdsCheckbox" type="checkbox"> <span>Keep test IDs for automation</span></label>
+        <label class="checkbox-row"><input id="promptWrapperCheckbox" type="checkbox"> <span>Wrap output in AI prompt</span></label>
+      </div>
+      <div class="compact-grid top-gap">
+        <div>
+          <label class="label" for="truncationInput">Max lines</label>
+          <input id="truncationInput" class="input" type="number" min="40" step="10">
+        </div>
+        <div>
+          <label class="label" for="tokenWarningInput">Token warning</label>
+          <input id="tokenWarningInput" class="input" type="number" min="500" step="500">
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-section">
+      <div class="section-header">
         <h2>Selection</h2>
         <button id="clearSelectionButton" class="button button-ghost" type="button">Clear</button>
       </div>
@@ -54,6 +78,7 @@
       <textarea id="outputPreview" class="output-preview" spellcheck="false"></textarea>
       <div class="actions">
         <button id="copyButton" class="button button-primary" type="button">Copy</button>
+        <button id="copyPromptButton" class="button button-secondary" type="button">Copy Prompt</button>
         <button id="snapshotButton" class="button button-secondary" type="button">Snapshot</button>
       </div>
     </section>

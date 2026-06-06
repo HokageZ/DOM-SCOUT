@@ -88,6 +88,7 @@ h2 {
 }
 
 .select,
+.input,
 .output-preview,
 .button {
   width: 100%;
@@ -96,13 +97,19 @@ h2 {
 }
 
 .select,
+.input,
 .output-preview {
   background: #0d1119;
   color: var(--text);
 }
 
-.select {
+.select,
+.input {
   padding: 10px 12px;
+}
+
+.input {
+  width: 100%;
 }
 
 .section-header,
@@ -122,6 +129,28 @@ h2 {
   margin-top: 12px;
   display: grid;
   gap: 8px;
+}
+
+.options-grid {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+}
+
+.top-gap {
+  margin-top: 12px;
 }
 
 .selection-item {
@@ -200,4 +229,8 @@ h2 {
   padding: 12px;
   border: 1px dashed var(--border);
   border-radius: 10px;
+}
+
+.warning-text {
+  color: #ffbf69;
 }

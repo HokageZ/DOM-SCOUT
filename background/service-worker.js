@@ -2,6 +2,26 @@ importScripts('../shared/constants.js');
 
 const stateByTabId = new Map();
 let currentWindowId = null;
+let persistedSettings = { ...DOMScout.DEFAULTS };
+
+async function loadPersistedSettings() {
+  const stored = await chrome.storage.local.get(DOMScout.STORAGE_KEYS.SETTINGS).catch(() => ({}));
+  persistedSettings = {
+    ...DOMScout.DEFAULTS,
+    ...(stored[DOMScout.STORAGE_KEYS.SETTINGS] || {}),
+  };
+}
+
+async function savePersistedSettings(settings) {
+  persistedSettings = {
+    ...persistedSettings,
+    ...settings,
+  };
+
+  await chrome.storage.local.set({
+    [DOMScout.STORAGE_KEYS.SETTINGS]: persistedSettings,
+  }).catch(() => undefined);
+}
 
 async function getActiveTab() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -17,7 +37,7 @@ function getTabState(tabId) {
   const initial = {
     inspectorEnabled: false,
     selections: [],
-    settings: { ...DOMScout.DEFAULTS },
+    settings: { ...persistedSettings },
   };
 
   stateByTabId.set(tabId, initial);
@@ -58,8 +78,11 @@ async function toggleInspector(tabId, enabled) {
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
+  await loadPersistedSettings();
   await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 });
+
+void loadPersistedSettings();
 
 chrome.action.onClicked.addListener(async (tab) => {
   if (!tab || typeof tab.id !== 'number') {
@@ -136,7 +159,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           } else {
             tabState.settings.format = message.format;
           }
+          await savePersistedSettings(tabState.settings);
           await sendToTab(tabId, { ...message, settings: tabState.settings });
+          await syncInspectorState(tabId);
+        }
+        sendResponse({ ok: true });
+        return;
+      }
+
+      case DOMScout.MSG.SET_SETTINGS: {
+        const tabId = message.tabId ?? senderTabId;
+        if (typeof tabId === 'number') {
+          const tabState = getTabState(tabId);
+          tabState.settings = {
+            ...tabState.settings,
+            ...(message.settings || {}),
+          };
+          await savePersistedSettings(tabState.settings);
+          await sendToTab(tabId, {
+            type: DOMScout.MSG.SET_SETTINGS,
+            settings: tabState.settings,
+          });
           await syncInspectorState(tabId);
         }
         sendResponse({ ok: true });
