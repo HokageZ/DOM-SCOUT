@@ -1,0 +1,10 @@
+*.log
+Thumbs.db
+desktop.ini
+
+# Extension packaging
+*.zip
+
+# Local editor state
+.vscode/
+.idea/
