@@ -60,7 +60,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["icons/*"],
+      "resources": ["icons/*", "content/content.css"],
       "matches": ["<all_urls>"]
     }
   ]
