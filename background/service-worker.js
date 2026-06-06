@@ -48,6 +48,30 @@ async function broadcastToPanel(message) {
   await chrome.runtime.sendMessage(message).catch(() => undefined);
 }
 
+async function injectContentScript(tabId) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: [
+        'shared/constants.js',
+        'lib/dom-cleaner.js',
+        'lib/css-extractor.js',
+        'lib/token-counter.js',
+        'lib/serializer.js',
+        'lib/formatter.js',
+        'content/highlighter.js',
+        'content/inspector.js',
+      ],
+    });
+    await chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ['content/content.css'],
+    });
+  } catch {
+    // Already injected or unsupported page
+  }
+}
+
 async function sendToTab(tabId, message) {
   await chrome.tabs.sendMessage(tabId, message).catch(() => undefined);
 }
@@ -91,6 +115,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   currentWindowId = tab.windowId;
   await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
+  await injectContentScript(tab.id);
   await toggleInspector(tab.id, true);
 });
 
@@ -106,6 +131,7 @@ chrome.commands.onCommand.addListener(async (command) => {
 
   currentWindowId = tab.windowId;
   await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
+  await injectContentScript(tab.id);
   await toggleInspector(tab.id);
 });
 
