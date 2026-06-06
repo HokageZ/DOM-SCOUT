@@ -37,11 +37,6 @@
     state.selections = state.selections.filter((selection) => selection.element && document.contains(selection.element));
     state.selections.forEach(reserializeSelection);
     DOMScout.highlighterApi.renderSelections(state.selections);
-    DOMScout.highlighterApi.renderToolbar(
-      state.selections,
-      handleCapture,
-      handleClear
-    );
 
     void chrome.runtime.sendMessage({
       type: DOMScout.MSG.SELECTION_UPDATED,
@@ -79,33 +74,28 @@
     });
   }
 
-  function addSelection(element, additive) {
-    const target = element;
-    if (!(target instanceof Element)) {
+  function toggleSelection(element) {
+    if (!(element instanceof Element)) {
       return;
     }
 
-    if (!additive) {
-      state.selections = [];
+    const existingIndex = state.selections.findIndex((selection) => selection.element === element);
+    if (existingIndex > -1) {
+      // Remove it
+      state.selections.splice(existingIndex, 1);
+    } else {
+      // Add it
+      const selection = {
+        selectionId: buildSelectionId(element),
+        element: element,
+        summary: '',
+        selector: '',
+        tagName: '',
+        formats: {},
+      };
+      reserializeSelection(selection);
+      state.selections.push(selection);
     }
-
-    const existing = state.selections.find((selection) => selection.element === target);
-    if (existing) {
-      syncSelections();
-      return;
-    }
-
-    const selection = {
-      selectionId: buildSelectionId(target),
-      element: target,
-      summary: '',
-      selector: '',
-      tagName: '',
-      formats: {},
-    };
-
-    reserializeSelection(selection);
-    state.selections.push(selection);
     syncSelections();
   }
 
@@ -115,13 +105,59 @@
   }
 
   function handleCapture() {
-    // Send to panel and disable inspector
+    // Open the side panel programmatically
+    void chrome.runtime.sendMessage({ type: DOMScout.MSG.OPEN_PANEL });
+    
+    // Stop picking mode but keep selections
     setInspectorEnabled(false);
     void chrome.runtime.sendMessage({ type: DOMScout.MSG.TOGGLE_INSPECTOR, enabled: false });
   }
 
   function handleClear() {
     clearSelections();
+  }
+
+  function handleToggleInspector(active) {
+    state.inspectorEnabled = active;
+    void chrome.runtime.sendMessage({ type: DOMScout.MSG.TOGGLE_INSPECTOR, enabled: active });
+  }
+
+  function handleTraverse(direction) {
+    if (!state.selections.length) {
+      return;
+    }
+
+    const lastIdx = state.selections.length - 1;
+    const lastSelection = state.selections[lastIdx];
+    const currentElement = lastSelection.element;
+
+    if (direction === 'parent') {
+      const parent = currentElement.parentElement;
+      if (parent && parent !== document.documentElement) {
+        state.selections[lastIdx] = {
+          selectionId: buildSelectionId(parent),
+          element: parent,
+          summary: '',
+          selector: '',
+          tagName: '',
+          formats: {},
+        };
+        syncSelections();
+      }
+    } else if (direction === 'child') {
+      const child = currentElement.firstElementChild;
+      if (child) {
+        state.selections[lastIdx] = {
+          selectionId: buildSelectionId(child),
+          element: child,
+          summary: '',
+          selector: '',
+          tagName: '',
+          formats: {},
+        };
+        syncSelections();
+      }
+    }
   }
 
   function updateHover(target) {
@@ -137,9 +173,10 @@
 
   function setInspectorEnabled(enabled) {
     state.inspectorEnabled = enabled;
+    DOMScout.highlighterApi.setPickingState(enabled);
+
     if (!enabled) {
       updateHover(null);
-      DOMScout.highlighterApi.hideToolbar();
       return;
     }
 
@@ -148,11 +185,6 @@
       DOMScout.highlighterApi.showHover(state.hoveredElement);
     }
     DOMScout.highlighterApi.renderSelections(state.selections);
-    DOMScout.highlighterApi.renderToolbar(
-      state.selections,
-      handleCapture,
-      handleClear
-    );
   }
 
   document.addEventListener('mousemove', (event) => {
@@ -171,9 +203,9 @@
       return;
     }
 
-    // Don't intercept clicks on our own toolbar
-    const toolbar = DOMScout.highlighter?.toolbar;
-    if (toolbar && toolbar.contains(event.target)) {
+    // Don't intercept clicks on our own root/dock/shadow element
+    const root = DOMScout.highlighter?.root;
+    if (root && (root === event.target || root.contains(event.target))) {
       return;
     }
 
@@ -187,7 +219,7 @@
     event.stopImmediatePropagation();
 
     const resolvedTarget = event.altKey && target.parentElement ? target.parentElement : target;
-    addSelection(resolvedTarget, event.shiftKey);
+    toggleSelection(resolvedTarget);
   }, true);
 
   document.addEventListener('keydown', (event) => {
@@ -205,11 +237,6 @@
       DOMScout.highlighterApi.showHover(state.hoveredElement);
     }
     DOMScout.highlighterApi.renderSelections(state.selections);
-    DOMScout.highlighterApi.renderToolbar(
-      state.selections,
-      handleCapture,
-      handleClear
-    );
   }, true);
 
   window.addEventListener('resize', () => {
@@ -220,11 +247,6 @@
       DOMScout.highlighterApi.showHover(state.hoveredElement);
     }
     DOMScout.highlighterApi.renderSelections(state.selections);
-    DOMScout.highlighterApi.renderToolbar(
-      state.selections,
-      handleCapture,
-      handleClear
-    );
   });
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -273,6 +295,12 @@
 
   try {
     DOMScout.highlighterApi.ensureRoot();
+    DOMScout.highlighterApi.setupDockCallbacks({
+      onCapture: handleCapture,
+      onClear: handleClear,
+      onToggleInspector: handleToggleInspector,
+      onTraverse: handleTraverse,
+    });
     console.log('[DOM-SCOUT] Content script loaded successfully');
   } catch (error) {
     console.error('[DOM-SCOUT] Failed to initialize:', error);

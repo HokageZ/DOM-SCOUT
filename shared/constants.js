@@ -25,6 +25,7 @@ DOMScout.MSG = {
   REMOVE_ELEMENT:        'ds:remove-element',
   REQUEST_SNAPSHOT:      'ds:request-snapshot',
   REQUEST_RESERIALIZE:   'ds:request-reserialize',
+  OPEN_PANEL:            'ds:open-panel',
   PING:                  'ds:ping',
 
   // Background → Content

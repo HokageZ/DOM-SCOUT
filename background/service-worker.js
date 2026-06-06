@@ -212,6 +212,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return;
       }
 
+      case DOMScout.MSG.OPEN_PANEL: {
+        const tabId = message.tabId ?? senderTabId;
+        const tab = sender.tab || (tabId ? await chrome.tabs.get(tabId).catch(() => null) : null);
+        if (tab && typeof tab.windowId === 'number') {
+          await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
+        }
+        sendResponse({ ok: true });
+        return;
+      }
+
       case DOMScout.MSG.TOGGLE_INSPECTOR: {
         const tabId = message.tabId ?? senderTabId;
         if (typeof tabId === 'number') {
