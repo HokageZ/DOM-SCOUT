@@ -26,11 +26,13 @@ body {
 
 body {
   padding: 14px;
+  transition: background 140ms ease, opacity 140ms ease;
 }
 
 .app {
   display: grid;
   gap: 14px;
+  transition: opacity 140ms ease, transform 140ms ease, filter 140ms ease;
 }
 
 .topbar,
@@ -46,6 +48,56 @@ body {
   align-items: start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.selection-mode-banner {
+  display: none;
+  padding: 18px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(91, 140, 255, 0.32);
+  background: rgba(12, 17, 26, 0.48);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.selection-mode-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.selection-mode-text {
+  margin: 0;
+  color: var(--muted);
+}
+
+body.selection-mode {
+  background: transparent;
+}
+
+body.selection-mode .app {
+  opacity: 0.34;
+  filter: saturate(0.7);
+  transform: scale(0.985);
+}
+
+body.selection-mode .selection-mode-banner {
+  display: block;
+}
+
+body.selection-mode .selection-mode-banner,
+body.selection-mode .topbar {
+  opacity: 1;
+}
+
+body.selection-mode .selection-mode-banner,
+body.selection-mode .topbar,
+body.selection-mode .button-primary {
+  pointer-events: auto;
+}
+
+body.selection-mode .panel-section {
+  background: rgba(21, 25, 36, 0.36);
+  border-color: rgba(42, 50, 70, 0.45);
 }
 
 .eyebrow {

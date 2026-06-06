@@ -8,6 +8,8 @@
   };
 
   const elements = {
+    body: document.body,
+    selectionModeBanner: document.getElementById('selectionModeBanner'),
     toggleInspectorButton: document.getElementById('toggleInspectorButton'),
     formatSelect: document.getElementById('formatSelect'),
     depthSelect: document.getElementById('depthSelect'),
@@ -50,6 +52,8 @@
     elements.promptWrapperCheckbox.checked = Boolean(state.settings.promptWrapper);
     elements.truncationInput.value = String(state.settings.truncationThreshold);
     elements.tokenWarningInput.value = String(state.settings.maxTokenWarning);
+    elements.body.classList.toggle('selection-mode', state.inspectorEnabled);
+    elements.selectionModeBanner.hidden = !state.inspectorEnabled;
   }
 
   function getEffectiveOutput() {

@@ -96,6 +96,11 @@
     reserializeSelection(selection);
     state.selections.push(selection);
     syncSelections();
+
+    if (!additive) {
+      setInspectorEnabled(false);
+      void chrome.runtime.sendMessage({ type: DOMScout.MSG.TOGGLE_INSPECTOR, enabled: false });
+    }
   }
 
   function removeSelection(selectionId) {
