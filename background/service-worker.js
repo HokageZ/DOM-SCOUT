@@ -79,7 +79,7 @@ async function toggleInspector(tabId, enabled) {
 
 chrome.runtime.onInstalled.addListener(async () => {
   await loadPersistedSettings();
-  await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
 });
 
 void loadPersistedSettings();
