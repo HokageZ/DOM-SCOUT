@@ -45,7 +45,18 @@ function getTabState(tabId) {
 }
 
 async function broadcastToPanel(message) {
-  await chrome.runtime.sendMessage(message).catch(() => undefined);
+  await chrome.runtime.sendMessage(message).catch((err) => {
+    console.error('[DOM-SCOUT BG] Failed to broadcast to panel:', err);
+  });
+}
+
+async function pingTab(tabId) {
+  try {
+    const response = await chrome.tabs.sendMessage(tabId, { type: DOMScout.MSG.PING });
+    return response && response.type === DOMScout.MSG.PONG;
+  } catch {
+    return false;
+  }
 }
 
 async function injectContentScript(tabId) {
@@ -67,13 +78,37 @@ async function injectContentScript(tabId) {
       target: { tabId },
       files: ['content/content.css'],
     });
-  } catch {
-    // Already injected or unsupported page
+    console.log('[DOM-SCOUT BG] Content script injected into tab', tabId);
+  } catch (error) {
+    console.error('[DOM-SCOUT BG] Failed to inject content script:', error);
+  }
+}
+
+async function ensureContentScript(tabId) {
+  const isAlive = await pingTab(tabId);
+  if (isAlive) {
+    console.log('[DOM-SCOUT BG] Content script already active on tab', tabId);
+    return;
+  }
+
+  console.log('[DOM-SCOUT BG] Content script not found, injecting...');
+  await injectContentScript(tabId);
+
+  // Wait a moment for scripts to initialize
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  const isNowAlive = await pingTab(tabId);
+  if (!isNowAlive) {
+    console.error('[DOM-SCOUT BG] Content script failed to initialize on tab', tabId);
   }
 }
 
 async function sendToTab(tabId, message) {
-  await chrome.tabs.sendMessage(tabId, message).catch(() => undefined);
+  try {
+    await chrome.tabs.sendMessage(tabId, message);
+  } catch (error) {
+    console.error('[DOM-SCOUT BG] Failed to send message to tab:', error);
+  }
 }
 
 async function syncInspectorState(tabId) {
@@ -115,7 +150,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   currentWindowId = tab.windowId;
   await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
-  await injectContentScript(tab.id);
+  await ensureContentScript(tab.id);
   await toggleInspector(tab.id, true);
 });
 
@@ -131,7 +166,7 @@ chrome.commands.onCommand.addListener(async (command) => {
 
   currentWindowId = tab.windowId;
   await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
-  await injectContentScript(tab.id);
+  await ensureContentScript(tab.id);
   await toggleInspector(tab.id);
 });
 

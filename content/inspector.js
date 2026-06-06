@@ -1,4 +1,6 @@
 (function () {
+  console.log('[DOM-SCOUT] Content script starting...');
+
   const state = {
     inspectorEnabled: false,
     settings: { ...DOMScout.DEFAULTS },
@@ -190,43 +192,53 @@
   });
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    console.log('[DOM-SCOUT] Received message:', message.type);
     switch (message.type) {
+      case DOMScout.MSG.PING:
+        sendResponse({ type: DOMScout.MSG.PONG, ok: true });
+        return true;
       case DOMScout.MSG.INSPECTOR_STATE:
         state.settings = { ...state.settings, ...(message.settings || {}) };
         setInspectorEnabled(Boolean(message.inspectorEnabled));
         sendResponse({ ok: true });
-        return;
+        return true;
       case DOMScout.MSG.CLEAR_SELECTION:
         clearSelections();
         sendResponse({ ok: true });
-        return;
+        return true;
       case DOMScout.MSG.SET_DEPTH:
         state.settings.depth = message.depth;
         syncSelections();
         sendResponse({ ok: true });
-        return;
+        return true;
       case DOMScout.MSG.SET_FORMAT:
         state.settings.format = message.format;
         syncSelections();
         sendResponse({ ok: true });
-        return;
+        return true;
       case DOMScout.MSG.SET_SETTINGS:
         state.settings = { ...state.settings, ...(message.settings || {}) };
         syncSelections();
         sendResponse({ ok: true });
-        return;
+        return true;
       case DOMScout.MSG.REMOVE_ELEMENT:
         removeSelection(message.selectionId);
         sendResponse({ ok: true });
-        return;
+        return true;
       case DOMScout.MSG.REQUEST_SNAPSHOT:
         sendPageSnapshot();
         sendResponse({ ok: true });
-        return;
+        return true;
       default:
         sendResponse({ ok: false });
+        return true;
     }
   });
 
-  DOMScout.highlighterApi.ensureRoot();
+  try {
+    DOMScout.highlighterApi.ensureRoot();
+    console.log('[DOM-SCOUT] Content script loaded successfully');
+  } catch (error) {
+    console.error('[DOM-SCOUT] Failed to initialize:', error);
+  }
 })();

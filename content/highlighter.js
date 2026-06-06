@@ -118,7 +118,7 @@
     }
 
     const rect = element.getBoundingClientRect();
-    const summary = `${DOMScout.serializer.getNodeSummary(element)} · ${Math.round(rect.width)}×${Math.round(rect.height)}`;
+    const summary = `${DOMScout.serializer.getNodeSummary(element)} \u00b7 ${Math.round(rect.width)}\u00d7${Math.round(rect.height)}`;
 
     setBoxRect(DOMScout.highlighter.hoverBox, rect);
     DOMScout.highlighter.hoverBox.style.display = 'block';
