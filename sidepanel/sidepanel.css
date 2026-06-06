@@ -50,6 +50,46 @@ body {
   gap: 12px;
 }
 
+.error-banner {
+  display: none;
+  padding: 18px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 107, 107, 0.32);
+  background: rgba(40, 15, 15, 0.48);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.error-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.error-text {
+  margin: 0;
+  color: var(--danger);
+}
+
+.error-banner h2 {
+  color: #ff8f8f;
+}
+
+body.has-error .app {
+  opacity: 0.22;
+  filter: saturate(0.4) blur(0.5px);
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
+body.has-error .error-banner {
+  display: block;
+  pointer-events: auto;
+}
+
+body.has-error .topbar {
+  pointer-events: auto;
+}
+
 .selection-mode-banner {
   display: none;
   padding: 18px 16px;

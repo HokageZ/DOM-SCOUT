@@ -28,6 +28,16 @@ async function getActiveTab() {
   return tabs[0] || null;
 }
 
+function isRestrictedUrl(url) {
+  if (!url) return true;
+  return url.startsWith('chrome://') || 
+         url.startsWith('chrome-extension://') || 
+         url.startsWith('devtools://') ||
+         url.startsWith('edge://') ||
+         url.startsWith('about:') ||
+         url.startsWith('file://');
+}
+
 function getTabState(tabId) {
   const existing = stateByTabId.get(tabId);
   if (existing) {
@@ -150,6 +160,19 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   currentWindowId = tab.windowId;
   await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
+
+  if (isRestrictedUrl(tab.url)) {
+    await broadcastToPanel({
+      type: DOMScout.MSG.SELECTION_UPDATED,
+      tabId: tab.id,
+      inspectorEnabled: false,
+      settings: getTabState(tab.id).settings,
+      selections: [],
+      error: 'Cannot use DOM-SCOUT on browser internal pages. Please navigate to a website.',
+    });
+    return;
+  }
+
   await ensureContentScript(tab.id);
   await toggleInspector(tab.id, true);
 });

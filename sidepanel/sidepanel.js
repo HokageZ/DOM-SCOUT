@@ -9,6 +9,9 @@
 
   const elements = {
     body: document.body,
+    errorBanner: document.getElementById('errorBanner'),
+    errorTitle: document.getElementById('errorTitle'),
+    errorText: document.getElementById('errorText'),
     selectionModeBanner: document.getElementById('selectionModeBanner'),
     toggleInspectorButton: document.getElementById('toggleInspectorButton'),
     formatSelect: document.getElementById('formatSelect'),
@@ -43,6 +46,7 @@
 
   function updateButtons() {
     elements.toggleInspectorButton.textContent = state.inspectorEnabled ? 'Disable Inspector' : 'Enable Inspector';
+    elements.toggleInspectorButton.disabled = Boolean(state.error);
     elements.formatSelect.value = state.settings.format;
     elements.depthSelect.value = String(state.settings.depth);
     elements.includeContextCheckbox.checked = Boolean(state.settings.includeContext);
@@ -52,8 +56,10 @@
     elements.promptWrapperCheckbox.checked = Boolean(state.settings.promptWrapper);
     elements.truncationInput.value = String(state.settings.truncationThreshold);
     elements.tokenWarningInput.value = String(state.settings.maxTokenWarning);
-    elements.body.classList.toggle('selection-mode', state.inspectorEnabled);
-    elements.selectionModeBanner.hidden = !state.inspectorEnabled;
+    elements.body.classList.toggle('selection-mode', state.inspectorEnabled && !state.error);
+    elements.body.classList.toggle('has-error', Boolean(state.error));
+    elements.selectionModeBanner.hidden = !state.inspectorEnabled || Boolean(state.error);
+    elements.errorBanner.hidden = !state.error;
   }
 
   function getEffectiveOutput() {
@@ -259,6 +265,16 @@
       state.inspectorEnabled = Boolean(message.inspectorEnabled);
       state.settings = { ...state.settings, ...(message.settings || {}) };
       state.selections = Array.isArray(message.selections) ? message.selections : state.selections;
+      state.error = message.error || null;
+      
+      if (state.error) {
+        elements.errorTitle.textContent = 'Cannot access this page';
+        elements.errorText.textContent = state.error;
+        state.output = '';
+        rerender();
+        return;
+      }
+      
       const rawOutput = state.selections.map((item) => item.formats?.[state.settings.format] || '').filter(Boolean).join('\n\n');
       state.output = rawOutput;
       if (state.settings.promptWrapper) {
@@ -272,6 +288,16 @@
       state.activeTabId = message.tabId ?? state.activeTabId;
       state.inspectorEnabled = Boolean(message.inspectorEnabled);
       state.settings = { ...state.settings, ...(message.settings || {}) };
+      state.error = message.error || null;
+      
+      if (state.error) {
+        elements.errorTitle.textContent = 'Cannot access this page';
+        elements.errorText.textContent = state.error;
+        state.output = '';
+        rerender();
+        return;
+      }
+      
       const rawOutput = message.output || '';
       state.output = rawOutput;
       if (state.settings.promptWrapper) {

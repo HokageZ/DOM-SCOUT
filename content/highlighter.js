@@ -52,6 +52,43 @@
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
       pointer-events: none;
     }
+    .dom-scout-toolbar {
+      position: fixed;
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(13, 17, 25, 0.96);
+      border: 1px solid rgba(42, 50, 70, 0.85);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      pointer-events: auto;
+      z-index: 2147483648;
+    }
+    .dom-scout-toolbar-btn {
+      appearance: none;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font: 13px/1 Inter, ui-sans-serif, system-ui, sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 80ms ease, opacity 120ms ease;
+      white-space: nowrap;
+    }
+    .dom-scout-toolbar-btn:hover {
+      transform: translateY(-1px);
+    }
+    .dom-scout-toolbar-btn:active {
+      transform: translateY(0);
+    }
+    .dom-scout-toolbar-capture {
+      background: #2ecc71;
+      color: #08110a;
+    }
+    .dom-scout-toolbar-clear {
+      background: rgba(42, 50, 70, 0.6);
+      color: #94a3b8;
+    }
   `;
 
   function clamp(value, min, max) {
@@ -81,6 +118,10 @@
 
     const selectedLayer = document.createElement('div');
 
+    const toolbar = document.createElement('div');
+    toolbar.className = 'dom-scout-toolbar';
+    toolbar.style.display = 'none';
+
     const style = document.createElement('style');
     style.textContent = CSS;
 
@@ -89,6 +130,7 @@
     layer.appendChild(label);
     layer.appendChild(selectedLayer);
     shadow.appendChild(layer);
+    shadow.appendChild(toolbar);
     document.documentElement.appendChild(root);
 
     DOMScout.highlighter = {
@@ -98,6 +140,7 @@
       hoverBox,
       label,
       selectedLayer,
+      toolbar,
     };
 
     return root;
@@ -161,10 +204,58 @@
     });
   }
 
+  function renderToolbar(selections, onCapture, onClear) {
+    ensureRoot();
+    const toolbar = DOMScout.highlighter.toolbar;
+    toolbar.replaceChildren();
+
+    if (!selections.length) {
+      toolbar.style.display = 'none';
+      return;
+    }
+
+    const captureBtn = document.createElement('button');
+    captureBtn.className = 'dom-scout-toolbar-btn dom-scout-toolbar-capture';
+    captureBtn.textContent = 'Capture to Panel';
+    captureBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onCapture();
+    });
+
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'dom-scout-toolbar-btn dom-scout-toolbar-clear';
+    clearBtn.textContent = 'Clear';
+    clearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onClear();
+    });
+
+    toolbar.appendChild(captureBtn);
+    toolbar.appendChild(clearBtn);
+
+    // Position toolbar below the last selected element
+    const lastSelection = selections[selections.length - 1];
+    if (lastSelection && lastSelection.element) {
+      const rect = lastSelection.element.getBoundingClientRect();
+      toolbar.style.left = `${rect.left}px`;
+      toolbar.style.top = `${rect.bottom + 12}px`;
+      toolbar.style.display = 'flex';
+    }
+  }
+
+  function hideToolbar() {
+    if (!DOMScout.highlighter) {
+      return;
+    }
+    DOMScout.highlighter.toolbar.style.display = 'none';
+  }
+
   DOMScout.highlighterApi = {
     ensureRoot,
     showHover,
     hideHover,
     renderSelections,
+    renderToolbar,
+    hideToolbar,
   };
 })();
