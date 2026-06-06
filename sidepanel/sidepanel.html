@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM-SCOUT</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">DOM-SCOUT</p>
+        <h1>Select DOM for AI</h1>
+      </div>
+      <button id="toggleInspectorButton" class="button button-primary" type="button">Enable Inspector</button>
+    </header>
+
+    <section class="panel-section compact-grid">
+      <div>
+        <label class="label" for="formatSelect">Format</label>
+        <select id="formatSelect" class="select">
+          <option value="clean-html">Clean HTML</option>
+          <option value="structure">Structure</option>
+          <option value="html-css">HTML + CSS</option>
+          <option value="accessibility">Accessibility</option>
+          <option value="selectors">Selectors</option>
+          <option value="page-snapshot">Page Snapshot</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="depthSelect">Depth</label>
+        <select id="depthSelect" class="select">
+          <option value="0">Element only</option>
+          <option value="1">+ 1 level</option>
+          <option value="Infinity">Full subtree</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="panel-section">
+      <div class="section-header">
+        <h2>Selection</h2>
+        <button id="clearSelectionButton" class="button button-ghost" type="button">Clear</button>
+      </div>
+      <div id="selectionList" class="selection-list empty-state">No elements selected yet.</div>
+    </section>
+
+    <section class="panel-section">
+      <div class="section-header">
+        <h2>Output</h2>
+        <div class="meta" id="metaSummary">0 items</div>
+      </div>
+      <textarea id="outputPreview" class="output-preview" spellcheck="false"></textarea>
+      <div class="actions">
+        <button id="copyButton" class="button button-primary" type="button">Copy</button>
+        <button id="snapshotButton" class="button button-secondary" type="button">Snapshot</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="../shared/constants.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

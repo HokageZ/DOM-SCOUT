@@ -3,8 +3,9 @@
  * Message types, config defaults, and noise attribute lists.
  */
 
+const DOMScoutGlobal = typeof globalThis !== 'undefined' ? globalThis : self;
 // eslint-disable-next-line no-var
-var DOMScout = window.DOMScout || {};
+var DOMScout = DOMScoutGlobal.DOMScout || {};
 
 DOMScout.MSG = {
   // Content → Background → SidePanel
@@ -131,4 +132,4 @@ DOMScout.DEFAULTS = {
   maxTokenWarning: 8000,
 };
 
-window.DOMScout = DOMScout;
+DOMScoutGlobal.DOMScout = DOMScout;
