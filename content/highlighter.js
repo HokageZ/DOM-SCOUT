@@ -49,8 +49,8 @@
   }
 
   function setBoxRect(node, rect) {
-    node.style.left = `${rect.left + window.scrollX}px`;
-    node.style.top = `${rect.top + window.scrollY}px`;
+    node.style.left = `${rect.left}px`;
+    node.style.top = `${rect.top}px`;
     node.style.width = `${Math.max(rect.width, 0)}px`;
     node.style.height = `${Math.max(rect.height, 0)}px`;
   }
@@ -69,8 +69,8 @@
     DOMScout.highlighter.hoverBox.hidden = false;
     DOMScout.highlighter.label.hidden = false;
     DOMScout.highlighter.label.textContent = summary;
-    DOMScout.highlighter.label.style.left = `${clamp(rect.left + window.scrollX, 8, window.scrollX + window.innerWidth - 280)}px`;
-    DOMScout.highlighter.label.style.top = `${Math.max(8, rect.top + window.scrollY - 34)}px`;
+    DOMScout.highlighter.label.style.left = `${clamp(rect.left, 8, window.innerWidth - 280)}px`;
+    DOMScout.highlighter.label.style.top = `${Math.max(8, rect.top - 34)}px`;
   }
 
   function hideHover() {
@@ -98,8 +98,8 @@
       const badge = document.createElement('div');
       badge.className = 'dom-scout-badge';
       badge.textContent = String(index + 1);
-      badge.style.left = `${rect.left + window.scrollX}px`;
-      badge.style.top = `${Math.max(8, rect.top + window.scrollY - 12)}px`;
+      badge.style.left = `${rect.left}px`;
+      badge.style.top = `${Math.max(8, rect.top - 12)}px`;
 
       DOMScout.highlighter.selectedLayer.appendChild(box);
       DOMScout.highlighter.selectedLayer.appendChild(badge);

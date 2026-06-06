@@ -57,6 +57,17 @@
     syncSelections();
   }
 
+  function sendPageSnapshot() {
+    const target = state.hoveredElement || document.body || document.documentElement;
+    const output = DOMScout.formatter.formatPageSnapshot(target);
+
+    void chrome.runtime.sendMessage({
+      type: DOMScout.MSG.PAGE_SNAPSHOT,
+      output,
+      selections: state.selections.map(toSerializableSelection),
+    });
+  }
+
   function addSelection(element, additive) {
     const target = element;
     if (!(target instanceof Element)) {
@@ -196,6 +207,10 @@
         return;
       case DOMScout.MSG.REMOVE_ELEMENT:
         removeSelection(message.selectionId);
+        sendResponse({ ok: true });
+        return;
+      case DOMScout.MSG.REQUEST_SNAPSHOT:
+        sendPageSnapshot();
         sendResponse({ ok: true });
         return;
       default:

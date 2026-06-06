@@ -155,6 +155,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return;
       }
 
+      case DOMScout.MSG.REQUEST_SNAPSHOT: {
+        const tabId = message.tabId ?? senderTabId;
+        if (typeof tabId === 'number') {
+          await sendToTab(tabId, { type: DOMScout.MSG.REQUEST_SNAPSHOT });
+        }
+        sendResponse({ ok: true });
+        return;
+      }
+
       case DOMScout.MSG.ELEMENT_SELECTED:
       case DOMScout.MSG.SELECTION_UPDATED:
       case DOMScout.MSG.PAGE_SNAPSHOT: {

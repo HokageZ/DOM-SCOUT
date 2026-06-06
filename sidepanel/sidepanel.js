@@ -106,6 +106,12 @@
 
   elements.formatSelect.addEventListener('change', async (event) => {
     state.settings.format = event.target.value;
+    if (state.settings.format === DOMScout.FORMATS.PAGE_SNAPSHOT && state.activeTabId != null) {
+      rerender();
+      await sendMessage({ type: DOMScout.MSG.REQUEST_SNAPSHOT, tabId: state.activeTabId });
+      return;
+    }
+
     if (state.activeTabId != null) {
       await sendMessage({ type: DOMScout.MSG.SET_FORMAT, tabId: state.activeTabId, format: state.settings.format });
     }
@@ -134,11 +140,9 @@
       return;
     }
 
-    await sendMessage({
-      type: DOMScout.MSG.SET_FORMAT,
-      tabId: state.activeTabId,
-      format: DOMScout.FORMATS.PAGE_SNAPSHOT,
-    });
+    state.settings.format = DOMScout.FORMATS.PAGE_SNAPSHOT;
+    rerender();
+    await sendMessage({ type: DOMScout.MSG.REQUEST_SNAPSHOT, tabId: state.activeTabId });
   });
 
   elements.selectionList.addEventListener('click', async (event) => {
@@ -161,6 +165,15 @@
       state.settings = { ...state.settings, ...(message.settings || {}) };
       state.selections = Array.isArray(message.selections) ? message.selections : state.selections;
       state.output = state.selections.map((item) => item.formats?.[state.settings.format] || '').filter(Boolean).join('\n\n');
+      rerender();
+      return;
+    }
+
+    if (message.type === DOMScout.MSG.PAGE_SNAPSHOT) {
+      state.activeTabId = message.tabId ?? state.activeTabId;
+      state.inspectorEnabled = Boolean(message.inspectorEnabled);
+      state.settings = { ...state.settings, ...(message.settings || {}) };
+      state.output = message.output || '';
       rerender();
     }
   });
