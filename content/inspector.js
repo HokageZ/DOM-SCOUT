@@ -36,7 +36,12 @@
   function syncSelections() {
     state.selections = state.selections.filter((selection) => selection.element && document.contains(selection.element));
     state.selections.forEach(reserializeSelection);
+    
+    // Format selections output
+    const output = state.selections.map((item) => item.formats?.[state.settings.format] || '').filter(Boolean).join('\n\n');
+
     DOMScout.highlighterApi.renderSelections(state.selections);
+    DOMScout.highlighterApi.updateSettings(state.settings, output);
 
     void chrome.runtime.sendMessage({
       type: DOMScout.MSG.SELECTION_UPDATED,
@@ -67,6 +72,8 @@
       state.settings
     ).value;
 
+    DOMScout.highlighterApi.updateSettings(state.settings, output);
+
     void chrome.runtime.sendMessage({
       type: DOMScout.MSG.PAGE_SNAPSHOT,
       output,
@@ -81,10 +88,8 @@
 
     const existingIndex = state.selections.findIndex((selection) => selection.element === element);
     if (existingIndex > -1) {
-      // Remove it
       state.selections.splice(existingIndex, 1);
     } else {
-      // Add it
       const selection = {
         selectionId: buildSelectionId(element),
         element: element,
@@ -105,10 +110,7 @@
   }
 
   function handleCapture() {
-    // Open the side panel programmatically
-    void chrome.runtime.sendMessage({ type: DOMScout.MSG.OPEN_PANEL });
-    
-    // Stop picking mode but keep selections
+    // Stop picking mode but keep selections and panel visible
     setInspectorEnabled(false);
     void chrome.runtime.sendMessage({ type: DOMScout.MSG.TOGGLE_INSPECTOR, enabled: false });
   }
@@ -120,6 +122,16 @@
   function handleToggleInspector(active) {
     state.inspectorEnabled = active;
     void chrome.runtime.sendMessage({ type: DOMScout.MSG.TOGGLE_INSPECTOR, enabled: active });
+  }
+
+  function handleChangeSettings(settings) {
+    state.settings = { ...state.settings, ...settings };
+    syncSelections();
+    // Notify background worker to persist settings
+    void chrome.runtime.sendMessage({
+      type: DOMScout.MSG.SET_SETTINGS,
+      settings: state.settings,
+    });
   }
 
   function handleTraverse(direction) {
@@ -177,6 +189,10 @@
 
     if (!enabled) {
       updateHover(null);
+      // Keep panel visible if selections exist
+      if (!state.selections.length) {
+        DOMScout.highlighterApi.hideToolbar();
+      }
       return;
     }
 
@@ -203,7 +219,6 @@
       return;
     }
 
-    // Don't intercept clicks on our own root/dock/shadow element
     const root = DOMScout.highlighter?.root;
     if (root && (root === event.target || root.contains(event.target))) {
       return;
@@ -230,7 +245,7 @@
   }, true);
 
   window.addEventListener('scroll', () => {
-    if (!state.inspectorEnabled) {
+    if (!state.inspectorEnabled && !state.selections.length) {
       return;
     }
     if (state.hoveredElement) {
@@ -240,7 +255,7 @@
   }, true);
 
   window.addEventListener('resize', () => {
-    if (!state.inspectorEnabled) {
+    if (!state.inspectorEnabled && !state.selections.length) {
       return;
     }
     if (state.hoveredElement) {
@@ -258,6 +273,7 @@
       case DOMScout.MSG.INSPECTOR_STATE:
         state.settings = { ...state.settings, ...(message.settings || {}) };
         setInspectorEnabled(Boolean(message.inspectorEnabled));
+        syncSelections();
         sendResponse({ ok: true });
         return true;
       case DOMScout.MSG.CLEAR_SELECTION:
@@ -300,6 +316,8 @@
       onClear: handleClear,
       onToggleInspector: handleToggleInspector,
       onTraverse: handleTraverse,
+      onRemoveSelection: removeSelection,
+      onChangeSettings: handleChangeSettings,
     });
     console.log('[DOM-SCOUT] Content script loaded successfully');
   } catch (error) {

@@ -1,7 +1,6 @@
 importScripts('../shared/constants.js');
 
 const stateByTabId = new Map();
-let currentWindowId = null;
 let persistedSettings = { ...DOMScout.DEFAULTS };
 
 async function loadPersistedSettings() {
@@ -17,7 +16,6 @@ async function savePersistedSettings(settings) {
     ...persistedSettings,
     ...settings,
   };
-
   await chrome.storage.local.set({
     [DOMScout.STORAGE_KEYS.SETTINGS]: persistedSettings,
   }).catch(() => undefined);
@@ -28,6 +26,20 @@ async function getActiveTab() {
   return tabs[0] || null;
 }
 
+function getTabState(tabId) {
+  const existing = stateByTabId.get(tabId);
+  if (existing) {
+    return existing;
+  }
+  const initial = {
+    inspectorEnabled: false,
+    selections: [],
+    settings: { ...persistedSettings },
+  };
+  stateByTabId.set(tabId, initial);
+  return initial;
+}
+
 function isRestrictedUrl(url) {
   if (!url) return true;
   return url.startsWith('chrome://') || 
@@ -36,28 +48,6 @@ function isRestrictedUrl(url) {
          url.startsWith('edge://') ||
          url.startsWith('about:') ||
          url.startsWith('file://');
-}
-
-function getTabState(tabId) {
-  const existing = stateByTabId.get(tabId);
-  if (existing) {
-    return existing;
-  }
-
-  const initial = {
-    inspectorEnabled: false,
-    selections: [],
-    settings: { ...persistedSettings },
-  };
-
-  stateByTabId.set(tabId, initial);
-  return initial;
-}
-
-async function broadcastToPanel(message) {
-  await chrome.runtime.sendMessage(message).catch((err) => {
-    console.error('[DOM-SCOUT BG] Failed to broadcast to panel:', err);
-  });
 }
 
 async function pingTab(tabId) {
@@ -88,28 +78,17 @@ async function injectContentScript(tabId) {
       target: { tabId },
       files: ['content/content.css'],
     });
-    console.log('[DOM-SCOUT BG] Content script injected into tab', tabId);
+    console.log('[DOM-SCOUT BG] Injected content scripts to tab', tabId);
   } catch (error) {
-    console.error('[DOM-SCOUT BG] Failed to inject content script:', error);
+    console.error('[DOM-SCOUT BG] Script injection failed:', error);
   }
 }
 
 async function ensureContentScript(tabId) {
-  const isAlive = await pingTab(tabId);
-  if (isAlive) {
-    console.log('[DOM-SCOUT BG] Content script already active on tab', tabId);
-    return;
-  }
-
-  console.log('[DOM-SCOUT BG] Content script not found, injecting...');
-  await injectContentScript(tabId);
-
-  // Wait a moment for scripts to initialize
-  await new Promise((resolve) => setTimeout(resolve, 100));
-
-  const isNowAlive = await pingTab(tabId);
-  if (!isNowAlive) {
-    console.error('[DOM-SCOUT BG] Content script failed to initialize on tab', tabId);
+  const alive = await pingTab(tabId);
+  if (!alive) {
+    await injectContentScript(tabId);
+    await new Promise((r) => setTimeout(r, 100));
   }
 }
 
@@ -117,85 +96,55 @@ async function sendToTab(tabId, message) {
   try {
     await chrome.tabs.sendMessage(tabId, message);
   } catch (error) {
-    console.error('[DOM-SCOUT BG] Failed to send message to tab:', error);
+    console.error('[DOM-SCOUT BG] Send message failed:', error);
   }
 }
 
-async function syncInspectorState(tabId) {
+async function syncState(tabId) {
   const tabState = getTabState(tabId);
-
   await sendToTab(tabId, {
     type: DOMScout.MSG.INSPECTOR_STATE,
     inspectorEnabled: tabState.inspectorEnabled,
     settings: tabState.settings,
     selections: tabState.selections,
   });
-
-  await broadcastToPanel({
-    type: DOMScout.MSG.SELECTION_UPDATED,
-    tabId,
-    inspectorEnabled: tabState.inspectorEnabled,
-    settings: tabState.settings,
-    selections: tabState.selections,
-  });
 }
 
-async function toggleInspector(tabId, enabled) {
+async function toggleInspector(tabId, forceEnabled) {
   const tabState = getTabState(tabId);
-  tabState.inspectorEnabled = typeof enabled === 'boolean' ? enabled : !tabState.inspectorEnabled;
-  await syncInspectorState(tabId);
+  tabState.inspectorEnabled = typeof forceEnabled === 'boolean' ? forceEnabled : !tabState.inspectorEnabled;
+  await syncState(tabId);
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
   await loadPersistedSettings();
-  await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
 });
 
 void loadPersistedSettings();
 
 chrome.action.onClicked.addListener(async (tab) => {
-  if (!tab || typeof tab.id !== 'number') {
-    return;
-  }
+  if (!tab || typeof tab.id !== 'number') return;
+  if (isRestrictedUrl(tab.url)) return;
 
-  currentWindowId = tab.windowId;
-  await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
-
-  if (isRestrictedUrl(tab.url)) {
-    await broadcastToPanel({
-      type: DOMScout.MSG.SELECTION_UPDATED,
-      tabId: tab.id,
-      inspectorEnabled: false,
-      settings: getTabState(tab.id).settings,
-      selections: [],
-      error: 'Cannot use DOM-SCOUT on browser internal pages. Please navigate to a website.',
-    });
-    return;
-  }
-
-  await ensureContentScript(tab.id);
-  await toggleInspector(tab.id, true);
-});
-
-chrome.commands.onCommand.addListener(async (command) => {
-  if (command !== 'toggle-inspector') {
-    return;
-  }
-
-  const tab = await getActiveTab();
-  if (!tab || typeof tab.id !== 'number') {
-    return;
-  }
-
-  currentWindowId = tab.windowId;
-  await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
   await ensureContentScript(tab.id);
   await toggleInspector(tab.id);
 });
 
-chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
-  currentWindowId = windowId;
-  await syncInspectorState(tabId);
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command !== 'toggle-inspector') return;
+  const tab = await getActiveTab();
+  if (!tab || typeof tab.id !== 'number') return;
+  if (isRestrictedUrl(tab.url)) return;
+
+  await ensureContentScript(tab.id);
+  await toggleInspector(tab.id);
+});
+
+chrome.tabs.onActivated.addListener(async ({ tabId }) => {
+  const tab = await chrome.tabs.get(tabId).catch(() => null);
+  if (tab && !isRestrictedUrl(tab.url)) {
+    await syncState(tabId);
+  }
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -204,137 +153,52 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   void (async () => {
-    const senderTabId = sender.tab && typeof sender.tab.id === 'number' ? sender.tab.id : null;
+    const tabId = sender.tab && typeof sender.tab.id === 'number' ? sender.tab.id : null;
+    if (!tabId) {
+      sendResponse({ ok: false });
+      return;
+    }
+
+    const tabState = getTabState(tabId);
 
     switch (message.type) {
-      case DOMScout.MSG.PING: {
+      case DOMScout.MSG.PING:
         sendResponse({ type: DOMScout.MSG.PONG });
         return;
-      }
 
-      case DOMScout.MSG.OPEN_PANEL: {
-        const tabId = message.tabId ?? senderTabId;
-        const tab = sender.tab || (tabId ? await chrome.tabs.get(tabId).catch(() => null) : null);
-        if (tab && typeof tab.windowId === 'number') {
-          await chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => undefined);
-        }
+      case DOMScout.MSG.TOGGLE_INSPECTOR:
+        tabState.inspectorEnabled = Boolean(message.enabled);
+        await syncState(tabId);
         sendResponse({ ok: true });
         return;
-      }
 
-      case DOMScout.MSG.TOGGLE_INSPECTOR: {
-        const tabId = message.tabId ?? senderTabId;
-        if (typeof tabId === 'number') {
-          await toggleInspector(tabId, message.enabled);
-        }
+      case DOMScout.MSG.SET_SETTINGS:
+        tabState.settings = { ...tabState.settings, ...(message.settings || {}) };
+        await savePersistedSettings(tabState.settings);
+        await syncState(tabId);
         sendResponse({ ok: true });
         return;
-      }
 
-      case DOMScout.MSG.CLEAR_SELECTION: {
-        const tabId = message.tabId ?? senderTabId;
-        if (typeof tabId === 'number') {
-          const tabState = getTabState(tabId);
-          tabState.selections = [];
-          await sendToTab(tabId, { type: DOMScout.MSG.CLEAR_SELECTION });
-          await syncInspectorState(tabId);
-        }
-        sendResponse({ ok: true });
-        return;
-      }
-
-      case DOMScout.MSG.SET_DEPTH:
-      case DOMScout.MSG.SET_FORMAT: {
-        const tabId = message.tabId ?? senderTabId;
-        if (typeof tabId === 'number') {
-          const tabState = getTabState(tabId);
-          if (message.type === DOMScout.MSG.SET_DEPTH) {
-            tabState.settings.depth = message.depth;
-          } else {
-            tabState.settings.format = message.format;
-          }
-          await savePersistedSettings(tabState.settings);
-          await sendToTab(tabId, { ...message, settings: tabState.settings });
-          await syncInspectorState(tabId);
-        }
-        sendResponse({ ok: true });
-        return;
-      }
-
-      case DOMScout.MSG.SET_SETTINGS: {
-        const tabId = message.tabId ?? senderTabId;
-        if (typeof tabId === 'number') {
-          const tabState = getTabState(tabId);
-          tabState.settings = {
-            ...tabState.settings,
-            ...(message.settings || {}),
-          };
-          await savePersistedSettings(tabState.settings);
-          await sendToTab(tabId, {
-            type: DOMScout.MSG.SET_SETTINGS,
-            settings: tabState.settings,
-          });
-          await syncInspectorState(tabId);
-        }
-        sendResponse({ ok: true });
-        return;
-      }
-
-      case DOMScout.MSG.REMOVE_ELEMENT: {
-        const tabId = message.tabId ?? senderTabId;
-        if (typeof tabId === 'number') {
-          const tabState = getTabState(tabId);
-          tabState.selections = tabState.selections.filter((item) => item.selectionId !== message.selectionId);
-          await sendToTab(tabId, message);
-          await syncInspectorState(tabId);
-        }
-        sendResponse({ ok: true });
-        return;
-      }
-
-      case DOMScout.MSG.REQUEST_SNAPSHOT: {
-        const tabId = message.tabId ?? senderTabId;
-        if (typeof tabId === 'number') {
-          await sendToTab(tabId, { type: DOMScout.MSG.REQUEST_SNAPSHOT });
-        }
-        sendResponse({ ok: true });
-        return;
-      }
-
-      case DOMScout.MSG.ELEMENT_SELECTED:
       case DOMScout.MSG.SELECTION_UPDATED:
-      case DOMScout.MSG.PAGE_SNAPSHOT: {
-        if (typeof senderTabId === 'number') {
-          const tabState = getTabState(senderTabId);
-          if (Array.isArray(message.selections)) {
-            tabState.selections = message.selections;
-          }
+        if (Array.isArray(message.selections)) {
+          tabState.selections = message.selections;
+        }
+        sendResponse({ ok: true });
+        return;
 
-          await broadcastToPanel({
-            ...message,
-            tabId: senderTabId,
+      default:
+        if (message.requestState) {
+          sendResponse({
+            ok: true,
+            tabId,
             inspectorEnabled: tabState.inspectorEnabled,
             settings: tabState.settings,
+            selections: tabState.selections,
           });
+          return;
         }
-        sendResponse({ ok: true });
-        return;
-      }
-
-      default: {
-        if (message && message.requestState) {
-          const tab = await getActiveTab();
-          if (tab && typeof tab.id === 'number') {
-            await syncInspectorState(tab.id);
-            sendResponse({ ok: true, tabId: tab.id, windowId: tab.windowId ?? currentWindowId });
-            return;
-          }
-        }
-
         sendResponse({ ok: false });
-      }
     }
   })();
-
   return true;
 });

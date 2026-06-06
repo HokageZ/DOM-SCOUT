@@ -5,6 +5,7 @@
       inset: 0;
       pointer-events: none;
       z-index: 2147483647;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
     }
     .dom-scout-hover-box {
       position: fixed;
@@ -76,7 +77,6 @@
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
       pointer-events: auto;
       z-index: 2147483648;
-      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
     }
     .dom-scout-dock-info {
       font-size: 13px;
@@ -139,6 +139,270 @@
     .dom-scout-dock-capture:active {
       transform: scale(0.95);
     }
+
+    /* Floating Control Panel CSS */
+    .dom-scout-panel {
+      position: fixed;
+      right: 24px;
+      top: 24px;
+      bottom: 24px;
+      width: 360px;
+      background: rgba(15, 20, 30, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      color: #edf1f8;
+      z-index: 2147483648;
+      pointer-events: auto;
+      overflow: hidden;
+      animation: domScoutSlideIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes domScoutSlideIn {
+      from { transform: translateX(380px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .dom-scout-panel-header {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .dom-scout-panel-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dom-scout-panel-title span {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .dom-scout-panel-close {
+      appearance: none;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      transition: background 120ms ease, color 120ms ease;
+    }
+    .dom-scout-panel-close:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+    .dom-scout-panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dom-scout-panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dom-scout-panel-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #94a3b8;
+      margin: 0;
+      font-weight: 700;
+    }
+    .dom-scout-panel-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .dom-scout-panel-label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .dom-scout-panel-select,
+    .dom-scout-panel-input {
+      background: rgba(10, 12, 18, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: #edf1f8;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 120ms ease;
+    }
+    .dom-scout-panel-select:focus,
+    .dom-scout-panel-input:focus {
+      border-color: rgba(91, 140, 255, 0.5);
+    }
+    .dom-scout-panel-options {
+      display: grid;
+      gap: 8px;
+    }
+    .dom-scout-panel-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #edf1f8;
+      cursor: pointer;
+    }
+    .dom-scout-panel-checkbox-row input {
+      margin: 0;
+      width: 15px;
+      height: 15px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: transparent;
+      cursor: pointer;
+    }
+    .dom-scout-panel-selections {
+      display: grid;
+      gap: 8px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .dom-scout-panel-selection-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .dom-scout-panel-selection-chip {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #5b8cff;
+      background: rgba(91, 140, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .dom-scout-panel-selection-name {
+      flex: 1;
+      margin: 0 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #edf1f8;
+    }
+    .dom-scout-panel-selection-remove {
+      appearance: none;
+      background: transparent;
+      border: none;
+      color: #ff6b6b;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .dom-scout-panel-selection-remove:hover {
+      background: rgba(255, 107, 107, 0.1);
+    }
+    .dom-scout-panel-empty {
+      font-size: 12px;
+      color: #94a3b8;
+      text-align: center;
+      padding: 12px;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+    }
+    .dom-scout-panel-preview-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .dom-scout-panel-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .dom-scout-panel-meta-warning {
+      color: #ffbf69;
+      font-weight: 600;
+    }
+    .dom-scout-panel-preview {
+      flex: 1;
+      min-height: 150px;
+      background: rgba(10, 12, 18, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: #a7b5eb;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      padding: 10px;
+      resize: none;
+      outline: none;
+    }
+    .dom-scout-panel-preview:focus {
+      border-color: rgba(91, 140, 255, 0.35);
+    }
+    .dom-scout-panel-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding-top: 8px;
+    }
+    .dom-scout-panel-btn {
+      appearance: none;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background 120ms ease, transform 80ms ease, color 120ms ease;
+    }
+    .dom-scout-panel-btn-primary {
+      background: #5b8cff;
+      color: #fff;
+    }
+    .dom-scout-panel-btn-primary:hover {
+      background: #3d72f6;
+    }
+    .dom-scout-panel-btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: #edf1f8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .dom-scout-panel-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .dom-scout-panel-btn:active {
+      transform: scale(0.97);
+    }
   `;
 
   let activeSelections = [];
@@ -147,7 +411,11 @@
   let activeCallbackClear = null;
   let activeCallbackToggleInspector = null;
   let activeCallbackTraverse = null;
+  let activeCallbackRemoveSelection = null;
+  let activeCallbackChangeSettings = null;
   let isPickingMode = true;
+  let currentSettings = { ...DOMScout.DEFAULTS };
+  let currentOutput = '';
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
@@ -180,6 +448,10 @@
     dock.className = 'dom-scout-dock';
     dock.style.display = 'none';
 
+    const panel = document.createElement('div');
+    panel.className = 'dom-scout-panel';
+    panel.style.display = 'none';
+
     const style = document.createElement('style');
     style.textContent = CSS;
 
@@ -189,6 +461,7 @@
     layer.appendChild(selectedLayer);
     shadow.appendChild(layer);
     shadow.appendChild(dock);
+    shadow.appendChild(panel);
     document.documentElement.appendChild(root);
 
     DOMScout.highlighter = {
@@ -199,9 +472,9 @@
       label,
       selectedLayer,
       dock,
+      panel,
     };
 
-    // Start tracking layout shifts and scroll/resize positions smoothly via requestAnimationFrame
     requestAnimationFrame(updatePositionsLoop);
 
     return root;
@@ -216,7 +489,6 @@
 
   function updatePositionsLoop() {
     if (DOMScout.highlighter) {
-      // Update Hover Box position if active
       if (currentHoveredElement && document.contains(currentHoveredElement)) {
         const rect = currentHoveredElement.getBoundingClientRect();
         setBoxRect(DOMScout.highlighter.hoverBox, rect);
@@ -232,7 +504,6 @@
         DOMScout.highlighter.label.style.display = 'none';
       }
 
-      // Update Selected Boxes
       const selectedLayer = DOMScout.highlighter.selectedLayer;
       const boxes = selectedLayer.querySelectorAll('.dom-scout-selected-box');
       const badges = selectedLayer.querySelectorAll('.dom-scout-badge');
@@ -254,7 +525,6 @@
             badge.style.display = 'inline-flex';
           }
         } else {
-          // Element removed from DOM
           const box = boxes[index];
           const badge = badges[index];
           if (box) box.style.display = 'none';
@@ -301,6 +571,7 @@
     });
 
     renderDockUI();
+    renderPanelUI();
   }
 
   function renderDockUI() {
@@ -313,18 +584,15 @@
       return;
     }
 
-    // 1. Info / Count
     const info = document.createElement('div');
     info.className = 'dom-scout-dock-info';
     info.textContent = `${activeSelections.length} Selected`;
     dock.appendChild(info);
 
-    // 2. Divider
     const divider1 = document.createElement('div');
     divider1.className = 'dom-scout-dock-divider';
     dock.appendChild(divider1);
 
-    // 3. Toggle Picker button (Active indicator)
     const pickerBtn = document.createElement('button');
     pickerBtn.className = `dom-scout-dock-btn ${isPickingMode ? 'dom-scout-dock-btn-active' : ''}`;
     pickerBtn.title = isPickingMode ? 'Picker Active' : 'Enable Picker';
@@ -345,7 +613,6 @@
     });
     dock.appendChild(pickerBtn);
 
-    // 4. Hierarchy Traverse Up (Parent)
     const parentBtn = document.createElement('button');
     parentBtn.className = 'dom-scout-dock-btn';
     parentBtn.title = 'Select Parent';
@@ -363,7 +630,6 @@
     });
     dock.appendChild(parentBtn);
 
-    // 5. Hierarchy Traverse Down (Child)
     const childBtn = document.createElement('button');
     childBtn.className = 'dom-scout-dock-btn';
     childBtn.title = 'Select Child';
@@ -381,12 +647,10 @@
     });
     dock.appendChild(childBtn);
 
-    // 6. Divider
     const divider2 = document.createElement('div');
     divider2.className = 'dom-scout-dock-divider';
     dock.appendChild(divider2);
 
-    // 7. Clear all selections button
     const clearBtn = document.createElement('button');
     clearBtn.className = 'dom-scout-dock-btn';
     clearBtn.title = 'Clear All';
@@ -405,19 +669,259 @@
     });
     dock.appendChild(clearBtn);
 
-    // 8. Capture & Open Side Panel button
-    const captureBtn = document.createElement('button');
-    captureBtn.className = 'dom-scout-toolbar-btn dom-scout-dock-capture';
-    captureBtn.textContent = 'Capture & Open Panel';
-    captureBtn.addEventListener('click', (e) => {
+    dock.style.display = 'flex';
+  }
+
+  function renderPanelUI() {
+    ensureRoot();
+    const panel = DOMScout.highlighter.panel;
+    panel.replaceChildren();
+
+    // 1. Header
+    const header = document.createElement('div');
+    header.className = 'dom-scout-panel-header';
+    
+    const title = document.createElement('h3');
+    title.className = 'dom-scout-panel-title';
+    title.innerHTML = 'DOM-SCOUT <span>Panel</span>';
+    header.appendChild(title);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'dom-scout-panel-close';
+    closeBtn.title = 'Close Panel';
+    closeBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    `;
+    closeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (activeCallbackCapture) {
-        activeCallbackCapture();
+        activeCallbackCapture(); // Close/disable inspector
       }
     });
-    dock.appendChild(captureBtn);
+    header.appendChild(closeBtn);
+    panel.appendChild(header);
 
-    dock.style.display = 'flex';
+    // 2. Content Container
+    const content = document.createElement('div');
+    content.className = 'dom-scout-panel-content';
+
+    // Format & Depth Section
+    const configSection = document.createElement('div');
+    configSection.className = 'dom-scout-panel-section';
+    
+    const configTitle = document.createElement('h4');
+    configTitle.className = 'dom-scout-panel-section-title';
+    configTitle.textContent = 'Configuration';
+    configSection.appendChild(configTitle);
+
+    const grid = document.createElement('div');
+    grid.className = 'dom-scout-panel-grid';
+
+    // Format select
+    const formatLabel = document.createElement('label');
+    formatLabel.className = 'dom-scout-panel-label';
+    formatLabel.textContent = 'Format';
+    const formatSelect = document.createElement('select');
+    formatSelect.className = 'dom-scout-panel-select';
+    formatSelect.innerHTML = `
+      <option value="clean-html" ${currentSettings.format === 'clean-html' ? 'selected' : ''}>Clean HTML</option>
+      <option value="structure" ${currentSettings.format === 'structure' ? 'selected' : ''}>Structure</option>
+      <option value="html-css" ${currentSettings.format === 'html-css' ? 'selected' : ''}>HTML + CSS</option>
+      <option value="accessibility" ${currentSettings.format === 'accessibility' ? 'selected' : ''}>Accessibility</option>
+      <option value="selectors" ${currentSettings.format === 'selectors' ? 'selected' : ''}>Selectors</option>
+      <option value="page-snapshot" ${currentSettings.format === 'page-snapshot' ? 'selected' : ''}>Page Snapshot</option>
+    `;
+    formatSelect.addEventListener('change', (e) => {
+      if (activeCallbackChangeSettings) {
+        activeCallbackChangeSettings({ format: e.target.value });
+      }
+    });
+    formatLabel.appendChild(formatSelect);
+    grid.appendChild(formatLabel);
+
+    // Depth select
+    const depthLabel = document.createElement('label');
+    depthLabel.className = 'dom-scout-panel-label';
+    depthLabel.textContent = 'Depth';
+    const depthSelect = document.createElement('select');
+    depthSelect.className = 'dom-scout-panel-select';
+    depthSelect.innerHTML = `
+      <option value="0" ${String(currentSettings.depth) === '0' ? 'selected' : ''}>Element only</option>
+      <option value="1" ${String(currentSettings.depth) === '1' ? 'selected' : ''}>+ 1 level</option>
+      <option value="Infinity" ${String(currentSettings.depth) === 'Infinity' ? 'selected' : ''}>Full subtree</option>
+    `;
+    depthSelect.addEventListener('change', (e) => {
+      const val = e.target.value === 'Infinity' ? Infinity : Number(e.target.value);
+      if (activeCallbackChangeSettings) {
+        activeCallbackChangeSettings({ depth: val });
+      }
+    });
+    depthLabel.appendChild(depthSelect);
+    grid.appendChild(depthLabel);
+    configSection.appendChild(grid);
+    content.appendChild(configSection);
+
+    // Options Checkboxes
+    const optionsSection = document.createElement('div');
+    optionsSection.className = 'dom-scout-panel-section';
+    const optionsTitle = document.createElement('h4');
+    optionsTitle.className = 'dom-scout-panel-section-title';
+    optionsTitle.textContent = 'Options';
+    optionsSection.appendChild(optionsTitle);
+
+    const optionsGrid = document.createElement('div');
+    optionsGrid.className = 'dom-scout-panel-options';
+
+    const optionsArr = [
+      { key: 'includeContext', label: 'Include parent context' },
+      { key: 'includeCSS', label: 'Include CSS in rich formats' },
+      { key: 'stripNoise', label: 'Strip framework/tracking noise' },
+      { key: 'keepTestIds', label: 'Keep test IDs' },
+      { key: 'promptWrapper', label: 'Wrap output in AI prompt' },
+    ];
+
+    optionsArr.forEach((opt) => {
+      const row = document.createElement('label');
+      row.className = 'dom-scout-panel-checkbox-row';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = Boolean(currentSettings[opt.key]);
+      checkbox.addEventListener('change', (e) => {
+        if (activeCallbackChangeSettings) {
+          activeCallbackChangeSettings({ [opt.key]: e.target.checked });
+        }
+      });
+      row.appendChild(checkbox);
+      row.appendChild(document.createTextNode(opt.label));
+      optionsGrid.appendChild(row);
+    });
+    optionsSection.appendChild(optionsGrid);
+    content.appendChild(optionsSection);
+
+    // Selections List Section
+    const selectionsSection = document.createElement('div');
+    selectionsSection.className = 'dom-scout-panel-section';
+    const selectionsTitle = document.createElement('h4');
+    selectionsTitle.className = 'dom-scout-panel-section-title';
+    selectionsTitle.textContent = 'Current Selection';
+    selectionsSection.appendChild(selectionsTitle);
+
+    const selectionsList = document.createElement('div');
+    selectionsList.className = 'dom-scout-panel-selections';
+
+    if (!activeSelections.length) {
+      const empty = document.createElement('div');
+      empty.className = 'dom-scout-panel-empty';
+      empty.textContent = 'No elements selected yet.';
+      selectionsList.appendChild(empty);
+    } else {
+      activeSelections.forEach((sel, index) => {
+        const item = document.createElement('div');
+        item.className = 'dom-scout-panel-selection-item';
+        
+        const chip = document.createElement('span');
+        chip.className = 'dom-scout-panel-selection-chip';
+        chip.textContent = `#${index + 1}`;
+        item.appendChild(chip);
+
+        const name = document.createElement('span');
+        name.className = 'dom-scout-panel-selection-name';
+        name.textContent = sel.summary || sel.tagName || 'element';
+        item.appendChild(name);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'dom-scout-panel-selection-remove';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (activeCallbackRemoveSelection) {
+            activeCallbackRemoveSelection(sel.selectionId);
+          }
+        });
+        item.appendChild(removeBtn);
+        selectionsList.appendChild(item);
+      });
+    }
+    selectionsSection.appendChild(selectionsList);
+    content.appendChild(selectionsSection);
+
+    // Preview Section
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'dom-scout-panel-preview-container';
+
+    const meta = document.createElement('div');
+    meta.className = 'dom-scout-panel-meta';
+    
+    const tokenEstimate = Math.ceil(currentOutput.length / 4);
+    const isWarning = tokenEstimate > currentSettings.maxTokenWarning;
+
+    const countSpan = document.createElement('span');
+    countSpan.textContent = `${activeSelections.length} items`;
+    meta.appendChild(countSpan);
+
+    const tokenSpan = document.createElement('span');
+    tokenSpan.className = isWarning ? 'dom-scout-panel-meta-warning' : '';
+    tokenSpan.textContent = `~${tokenEstimate} tokens${isWarning ? ' (warning)' : ''}`;
+    meta.appendChild(tokenSpan);
+    previewContainer.appendChild(meta);
+
+    const preview = document.createElement('textarea');
+    preview.className = 'dom-scout-panel-preview';
+    preview.readOnly = true;
+    preview.value = currentOutput || 'Selected structure will appear here...';
+    previewContainer.appendChild(preview);
+
+    // Copy actions
+    const actions = document.createElement('div');
+    actions.className = 'dom-scout-panel-actions';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'dom-scout-panel-btn dom-scout-panel-btn-primary';
+    copyBtn.textContent = 'Copy to Clipboard';
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      copyToClipboard(currentOutput, copyBtn, 'Copy to Clipboard');
+    });
+    actions.appendChild(copyBtn);
+
+    const copyPromptBtn = document.createElement('button');
+    copyPromptBtn.className = 'dom-scout-panel-btn dom-scout-panel-btn-secondary';
+    copyPromptBtn.textContent = 'Copy AI Prompt';
+    copyPromptBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const format = currentSettings.format;
+      const promptWrapped = [
+        'Use the following browser DOM capture to help with implementation or analysis.',
+        `Format: ${format}`,
+        'Focus on semantic structure, selectors, and relevant styling only.',
+        '',
+        currentOutput,
+      ].join('\n');
+      copyToClipboard(promptWrapped, copyPromptBtn, 'Copy AI Prompt');
+    });
+    actions.appendChild(copyPromptBtn);
+    previewContainer.appendChild(actions);
+
+    content.appendChild(previewContainer);
+    panel.appendChild(content);
+
+    // Render it visible if panel display is open
+    panel.style.display = isPickingMode || activeSelections.length ? 'flex' : 'none';
+  }
+
+  function copyToClipboard(text, btn, originalText) {
+    if (!text.trim()) return;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.style.background = '#2ecc71';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+      }, 1500);
+    });
   }
 
   function setupDockCallbacks(callbacks) {
@@ -425,6 +929,8 @@
     activeCallbackClear = callbacks.onClear;
     activeCallbackToggleInspector = callbacks.onToggleInspector;
     activeCallbackTraverse = callbacks.onTraverse;
+    activeCallbackRemoveSelection = callbacks.onRemoveSelection;
+    activeCallbackChangeSettings = callbacks.onChangeSettings;
   }
 
   function hideToolbar() {
@@ -432,11 +938,19 @@
       return;
     }
     DOMScout.highlighter.dock.style.display = 'none';
+    DOMScout.highlighter.panel.style.display = 'none';
   }
 
   function setPickingState(picking) {
     isPickingMode = picking;
     renderDockUI();
+    renderPanelUI();
+  }
+
+  function updateSettings(settings, output) {
+    currentSettings = { ...currentSettings, ...settings };
+    currentOutput = output;
+    renderPanelUI();
   }
 
   DOMScout.highlighterApi = {
@@ -444,9 +958,10 @@
     showHover,
     hideHover,
     renderSelections,
-    renderToolbar: renderSelections, // backward compatibility
+    renderToolbar: renderSelections,
     hideToolbar,
     setupDockCallbacks,
     setPickingState,
+    updateSettings,
   };
 })();

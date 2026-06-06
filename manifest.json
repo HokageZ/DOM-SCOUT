@@ -4,16 +4,12 @@
   "version": "1.0.0",
   "description": "Select DOM elements and copy AI-ready representations to clipboard. Stop sending screenshots - send structure.",
   "permissions": [
-    "sidePanel",
     "activeTab",
     "scripting",
     "storage",
     "contextMenus",
     "commands"
   ],
-  "side_panel": {
-    "default_path": "sidepanel/sidepanel.html"
-  },
   "action": {
     "default_title": "DOM-SCOUT: Select & Copy DOM for AI",
     "default_icon": {
