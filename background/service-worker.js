@@ -1,4 +1,4 @@
-importScripts('../shared/constants.js');
+importScripts('/shared/constants.js');
 
 const stateByTabId = new Map();
 let persistedSettings = { ...DOMScout.DEFAULTS };
@@ -41,7 +41,7 @@ function getTabState(tabId) {
 }
 
 function isRestrictedUrl(url) {
-  if (!url) return true;
+  if (!url) return false;
   return url.startsWith('chrome://') || 
          url.startsWith('chrome-extension://') || 
          url.startsWith('devtools://') ||
