@@ -883,7 +883,17 @@
     copyBtn.textContent = 'Copy to Clipboard';
     copyBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      copyToClipboard(currentOutput, copyBtn, 'Copy to Clipboard');
+      let text = currentOutput;
+      if (currentSettings.promptWrapper && text.trim()) {
+        text = DOMScout.buildPrompt({
+          url: location.href,
+          title: document.title,
+          elementCount: activeSelections.length,
+          format: currentSettings.format,
+          output: currentOutput,
+        });
+      }
+      copyToClipboard(text, copyBtn, 'Copy to Clipboard');
     });
     actions.appendChild(copyBtn);
 
@@ -892,14 +902,13 @@
     copyPromptBtn.textContent = 'Copy AI Prompt';
     copyPromptBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const format = currentSettings.format;
-      const promptWrapped = [
-        'Use the following browser DOM capture to help with implementation or analysis.',
-        `Format: ${format}`,
-        'Focus on semantic structure, selectors, and relevant styling only.',
-        '',
-        currentOutput,
-      ].join('\n');
+      const promptWrapped = DOMScout.buildPrompt({
+        url: location.href,
+        title: document.title,
+        elementCount: activeSelections.length,
+        format: currentSettings.format,
+        output: currentOutput,
+      });
       copyToClipboard(promptWrapped, copyPromptBtn, 'Copy AI Prompt');
     });
     actions.appendChild(copyPromptBtn);

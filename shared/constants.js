@@ -141,4 +141,107 @@ DOMScout.DEFAULTS = {
   promptWrapper: false,
 };
 
+// Format-aware AI prompt templates
+// Each returns a function(meta) where meta = { url, title, elementCount, format, output }
+DOMScout.PROMPT_TEMPLATES = {
+  [DOMScout.FORMATS.CLEAN_HTML]: (meta) => [
+    `Below is a cleaned DOM capture from the page "${meta.title}".`,
+    `URL: ${meta.url}`,
+    `Elements captured: ${meta.elementCount} | Format: Clean HTML`,
+    '',
+    'The HTML has been stripped of tracking attributes, framework internals, and inline scripts.',
+    'Use this to understand the semantic structure, identify elements, or replicate the markup.',
+    '',
+    '```html',
+    meta.output,
+    '```',
+  ].join('\n'),
+
+  [DOMScout.FORMATS.STRUCTURE]: (meta) => [
+    `Below is a structural tree outline of DOM elements from "${meta.title}".`,
+    `URL: ${meta.url}`,
+    `Elements captured: ${meta.elementCount} | Format: Structure`,
+    '',
+    'Each line shows: tag#id.classes "text preview". Indentation represents nesting depth.',
+    'Use this to understand the component hierarchy and locate elements by their position in the tree.',
+    '',
+    '```',
+    meta.output,
+    '```',
+  ].join('\n'),
+
+  [DOMScout.FORMATS.HTML_CSS]: (meta) => [
+    `Below is a DOM capture with extracted computed CSS from "${meta.title}".`,
+    `URL: ${meta.url}`,
+    `Elements captured: ${meta.elementCount} | Format: HTML + CSS`,
+    '',
+    'The output includes cleaned HTML followed by computed style rules for the selected subtree.',
+    'Use this to replicate the visual appearance, debug layout issues, or extract design tokens.',
+    '',
+    meta.output,
+  ].join('\n'),
+
+  [DOMScout.FORMATS.ACCESSIBILITY]: (meta) => [
+    `Below is an accessibility audit of DOM elements from "${meta.title}".`,
+    `URL: ${meta.url}`,
+    `Elements captured: ${meta.elementCount} | Format: Accessibility`,
+    '',
+    'Each line shows: [tag role aria-attrs] "accessible name" plus any warnings.',
+    'Warnings include: missing-alt (images without alt text), unnamed-button (buttons without accessible names).',
+    'Use this to evaluate WCAG compliance, fix a11y issues, or verify semantic roles.',
+    '',
+    '```',
+    meta.output,
+    '```',
+  ].join('\n'),
+
+  [DOMScout.FORMATS.SELECTORS]: (meta) => [
+    `Below is a selector fingerprint map for DOM elements from "${meta.title}".`,
+    `URL: ${meta.url}`,
+    `Elements captured: ${meta.elementCount} | Format: Selectors`,
+    '',
+    'The JSON contains ranked CSS selectors, XPath expressions, and a fingerprint object.',
+    'The fingerprint includes multiple locator strategies grouped by resilience:',
+    '  - stable: attribute/content-based selectors that survive DOM restructures',
+    '  - positional: CSS paths with nth-of-type that rely on sibling order',
+    '  - fragile: absolute paths that break on any structural change',
+    'Each selector has been verified for uniqueness against the live DOM.',
+    'Use this to build resilient Playwright/Puppeteer/Selenium automation scripts.',
+    '',
+    '```json',
+    meta.output,
+    '```',
+  ].join('\n'),
+
+  [DOMScout.FORMATS.PAGE_SNAPSHOT]: (meta) => [
+    `Below is a page-level snapshot of "${meta.title}".`,
+    `URL: ${meta.url}`,
+    `Format: Page Snapshot`,
+    '',
+    'This includes interactive element counts, landmark regions, heading hierarchy,',
+    'and the currently selected element. Use this to understand the page structure',
+    'at a glance before drilling into specific elements.',
+    '',
+    '```',
+    meta.output,
+    '```',
+  ].join('\n'),
+};
+
+// Builds the prompt string for a given format and metadata
+DOMScout.buildPrompt = function (meta) {
+  const templateFn = DOMScout.PROMPT_TEMPLATES[meta.format];
+  if (templateFn) {
+    return templateFn(meta);
+  }
+  // Fallback for unknown formats
+  return [
+    `DOM capture from "${meta.title}"`,
+    `URL: ${meta.url}`,
+    `Elements: ${meta.elementCount} | Format: ${meta.format}`,
+    '',
+    meta.output,
+  ].join('\n');
+};
+
 DOMScoutGlobal.DOMScout = DOMScout;
