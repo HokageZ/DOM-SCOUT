@@ -5,7 +5,7 @@
       inset: 0;
       pointer-events: none;
       z-index: 2147483647;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .dom-scout-hover-box {
       position: fixed;
@@ -80,7 +80,7 @@
     }
     .dom-scout-dock-info {
       font-size: 13px;
-      color: #94a3b8;
+      color: #cbd5e1;
       font-weight: 500;
       margin-right: 4px;
       white-space: nowrap;
@@ -188,7 +188,7 @@
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #94a3b8;
+      color: #cbd5e1;
       background: rgba(255, 255, 255, 0.06);
       padding: 2px 6px;
       border-radius: 4px;
@@ -197,7 +197,7 @@
       appearance: none;
       background: transparent;
       border: none;
-      color: #94a3b8;
+      color: #cbd5e1;
       font-size: 18px;
       cursor: pointer;
       padding: 4px;
@@ -231,7 +231,7 @@
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #94a3b8;
+      color: #cbd5e1;
       margin: 0;
       font-weight: 700;
     }
@@ -245,18 +245,22 @@
       flex-direction: column;
       gap: 6px;
       font-size: 12px;
-      color: #94a3b8;
+      color: #cbd5e1;
     }
     .dom-scout-panel-select,
     .dom-scout-panel-input {
-      background: rgba(10, 12, 18, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
-      color: #edf1f8;
+      color: #f8fafc;
       padding: 8px 10px;
       font-size: 13px;
       outline: none;
       transition: border-color 120ms ease;
+    }
+    .dom-scout-panel-select option {
+      background: #0f141e;
+      color: #f8fafc;
     }
     .dom-scout-panel-select:focus,
     .dom-scout-panel-input:focus {
@@ -298,6 +302,7 @@
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 8px;
       font-size: 12px;
+      min-width: 0;
     }
     .dom-scout-panel-selection-chip {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -306,6 +311,7 @@
       padding: 2px 6px;
       border-radius: 4px;
       font-weight: 600;
+      flex-shrink: 0;
     }
     .dom-scout-panel-selection-name {
       flex: 1;
@@ -314,6 +320,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       color: #edf1f8;
+      min-width: 0;
     }
     .dom-scout-panel-selection-remove {
       appearance: none;
@@ -325,6 +332,7 @@
       font-weight: 600;
       padding: 4px 8px;
       border-radius: 4px;
+      flex-shrink: 0;
     }
     .dom-scout-panel-selection-remove:hover {
       background: rgba(255, 107, 107, 0.1);
@@ -347,7 +355,7 @@
       display: flex;
       justify-content: space-between;
       font-size: 11px;
-      color: #94a3b8;
+      color: #cbd5e1;
     }
     .dom-scout-panel-meta-warning {
       color: #ffbf69;
@@ -356,12 +364,12 @@
     .dom-scout-panel-preview {
       flex: 1;
       min-height: 150px;
-      background: rgba(10, 12, 18, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
-      color: #a7b5eb;
+      color: #f8fafc;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.5;
       padding: 10px;
       resize: none;
