@@ -1,14 +1,17 @@
 (function () {
   const CSS = `
-    :host {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+      box-sizing: border-box;
+    }
+    input, select, textarea, button, option {
+      font-family: inherit !important;
     }
     .dom-scout-layer {
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 2147483647;
-      font-family: inherit;
     }
     .dom-scout-hover-box {
       position: fixed;
@@ -36,7 +39,9 @@
       background: rgba(15, 20, 30, 0.96);
       color: #edf1f8;
       border: 1px solid rgba(91, 140, 255, 0.45);
-      font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.35;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -56,7 +61,8 @@
       border-radius: 999px;
       background: rgba(46, 204, 113, 0.98);
       color: #08110a;
-      font: 10px/1 Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 10px;
+      line-height: 1;
       font-weight: 700;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       pointer-events: none;
@@ -310,7 +316,7 @@
       min-width: 0;
     }
     .dom-scout-panel-selection-chip {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
       color: #5b8cff;
       background: rgba(91, 140, 255, 0.1);
       padding: 2px 6px;
@@ -331,7 +337,7 @@
       appearance: none;
       background: transparent;
       border: none;
-      color: #ff6b6b;
+      color: #ff8787;
       cursor: pointer;
       font-size: 11px;
       font-weight: 600;
@@ -373,12 +379,32 @@
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
       color: #f8fafc;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
       font-size: 12px;
       line-height: 1.5;
       padding: 10px;
       resize: none;
       outline: none;
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.35);
+      border: 2px solid transparent;
+      background-clip: padding-box;
     }
     .dom-scout-panel-preview:focus {
       border-color: rgba(91, 140, 255, 0.35);
@@ -408,12 +434,12 @@
       background: #3d72f6;
     }
     .dom-scout-panel-btn-secondary {
-      background: rgba(255, 255, 255, 0.06);
-      color: #edf1f8;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
     .dom-scout-panel-btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.18);
       color: #fff;
     }
     .dom-scout-panel-btn:active {
