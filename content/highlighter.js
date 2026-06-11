@@ -890,7 +890,7 @@
       <option value="Infinity" ${String(currentSettings.depth) === 'Infinity' ? 'selected' : ''}>Full subtree</option>
     `;
     depthSelect.addEventListener('change', (e) => {
-      const val = e.target.value === 'Infinity' ? Infinity : Number(e.target.value);
+      const val = e.target.value === 'Infinity' ? 'Infinity' : Number(e.target.value);
       if (activeCallbackChangeSettings) {
         activeCallbackChangeSettings({ depth: val });
       }

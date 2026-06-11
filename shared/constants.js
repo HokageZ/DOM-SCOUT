@@ -47,7 +47,7 @@ DOMScout.FORMATS = {
 DOMScout.DEPTH = {
   ELEMENT_ONLY: 0,
   ONE_LEVEL:    1,
-  FULL_SUBTREE: Infinity,
+  FULL_SUBTREE: 'Infinity',
 };
 
 DOMScout.STORAGE_KEYS = {
