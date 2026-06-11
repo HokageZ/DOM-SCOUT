@@ -23,7 +23,12 @@
       return null;
     }
 
-    return target.closest('body *');
+    const tag = target.tagName.toLowerCase();
+    if (tag === 'html' || tag === 'head' || tag === 'script' || tag === 'style') {
+      return null;
+    }
+
+    return target;
   }
 
   function reserializeSelection(selection) {
@@ -208,7 +213,8 @@
       return;
     }
 
-    const target = findSelectableTarget(event.target);
+    const path = event.composedPath ? event.composedPath() : [event.target];
+    const target = findSelectableTarget(path[0]);
     if (target !== state.hoveredElement) {
       updateHover(target);
     }
@@ -220,11 +226,12 @@
     }
 
     const root = DOMScout.highlighter?.root;
-    if (root && (root === event.target || root.contains(event.target))) {
+    const path = event.composedPath ? event.composedPath() : [event.target];
+    if (root && path.some((el) => el === root)) {
       return;
     }
 
-    const target = findSelectableTarget(event.target);
+    const target = findSelectableTarget(path[0]);
     if (!target) {
       return;
     }
@@ -233,7 +240,8 @@
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-    const resolvedTarget = event.altKey && target.parentElement ? target.parentElement : target;
+    const parentEl = DOMScout.serializer.getParentElement(target);
+    const resolvedTarget = event.altKey && parentEl ? parentEl : target;
     toggleSelection(resolvedTarget);
   }, true);
 
