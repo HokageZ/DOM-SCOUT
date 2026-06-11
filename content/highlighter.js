@@ -1,11 +1,14 @@
 (function () {
   const CSS = `
+    :host {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
     .dom-scout-layer {
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 2147483647;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: inherit;
     }
     .dom-scout-hover-box {
       position: fixed;
@@ -77,6 +80,7 @@
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
       pointer-events: auto;
       z-index: 2147483648;
+      font-family: inherit;
     }
     .dom-scout-dock-info {
       font-size: 13px;
@@ -161,6 +165,7 @@
       pointer-events: auto;
       overflow: hidden;
       animation: domScoutSlideIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      font-family: inherit;
     }
     @keyframes domScoutSlideIn {
       from { transform: translateX(380px); opacity: 0; }
