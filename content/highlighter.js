@@ -145,7 +145,8 @@
       position: fixed;
       right: 24px;
       top: 24px;
-      bottom: 24px;
+      height: calc(100vh - 48px);
+      max-height: calc(100vh - 48px);
       width: 360px;
       background: rgba(15, 20, 30, 0.85);
       backdrop-filter: blur(16px);
@@ -171,6 +172,8 @@
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: grab;
+      user-select: none;
     }
     .dom-scout-panel-title {
       margin: 0;
@@ -417,6 +420,14 @@
   let currentSettings = { ...DOMScout.DEFAULTS };
   let currentOutput = '';
 
+  let panelX = null;
+  let panelY = null;
+  let isDraggingPanel = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let initialPanelX = 0;
+  let initialPanelY = 0;
+
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
   }
@@ -454,6 +465,70 @@
 
     const style = document.createElement('style');
     style.textContent = CSS;
+
+    // Dragging logic for panel
+    panel.addEventListener('mousedown', (e) => {
+      const header = panel.querySelector('.dom-scout-panel-header');
+      if (!header) return;
+
+      // Ignore if clicking inputs, select, textarea, or buttons
+      if (e.target.closest('button, input, select, textarea, .dom-scout-panel-close')) {
+        return;
+      }
+
+      // Only drag if click was inside header
+      if (!header.contains(e.target)) {
+        return;
+      }
+
+      isDraggingPanel = true;
+      header.style.cursor = 'grabbing';
+
+      const rect = panel.getBoundingClientRect();
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      initialPanelX = rect.left;
+      initialPanelY = rect.top;
+
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      panel.style.left = `${initialPanelX}px`;
+      panel.style.top = `${initialPanelY}px`;
+      panel.style.height = `${rect.height}px`;
+
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDraggingPanel) return;
+
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+
+      let newX = initialPanelX + dx;
+      let newY = initialPanelY + dy;
+
+      // Keep panel partially inside viewport
+      const rect = panel.getBoundingClientRect();
+      newX = Math.max(-rect.width + 50, Math.min(newX, window.innerWidth - 50));
+      newY = Math.max(0, Math.min(newY, window.innerHeight - 50));
+
+      panelX = newX;
+      panelY = newY;
+
+      panel.style.left = `${newX}px`;
+      panel.style.top = `${newY}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isDraggingPanel) {
+        isDraggingPanel = false;
+        const header = panel.querySelector('.dom-scout-panel-header');
+        if (header) {
+          header.style.cursor = 'grab';
+        }
+      }
+    });
 
     shadow.appendChild(style);
     layer.appendChild(hoverBox);
@@ -668,6 +743,28 @@
       }
     });
     dock.appendChild(clearBtn);
+
+    const resetPositionBtn = document.createElement('button');
+    resetPositionBtn.className = 'dom-scout-dock-btn';
+    resetPositionBtn.title = 'Reset Panel Position';
+    resetPositionBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 4v6h-6"></path>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+      </svg>
+    `;
+    resetPositionBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panelX = null;
+      panelY = null;
+      const p = DOMScout.highlighter.panel;
+      p.style.left = '';
+      p.style.top = '';
+      p.style.right = '';
+      p.style.bottom = '';
+      p.style.height = '';
+    });
+    dock.appendChild(resetPositionBtn);
 
     dock.style.display = 'flex';
   }
