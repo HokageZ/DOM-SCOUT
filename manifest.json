@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "DOM-SCOUT",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Select DOM elements and copy AI-ready representations to clipboard. Stop sending screenshots - send structure.",
   "update_url": "https://raw.githubusercontent.com/HokageZ/DOM-SCOUT/main/updates.xml",
   "permissions": [
